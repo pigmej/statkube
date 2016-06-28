@@ -1,0 +1,16 @@
+GITHUB_USERNAME: gitfred
+GITHUB_PASSWORD: ''
+GITHUB_REPO: kubernetes/kubernetes
+GITHUB_USERS:
+  # - andreykurilin
+  # - asalkeld
+  # - dims
+  # - dshulyak
+  # - Frostman
+  - gitfred
+  - loles
+  - nebril
+  # - nhlfr
+  # - pigmej
+  # - tnachen
+  # - vefimova
