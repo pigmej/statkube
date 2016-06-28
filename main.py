@@ -1,14 +1,16 @@
-import os
 from getpass import getpass
-import operator
 from itertools import groupby
+import csv
+import operator
+import os
 
 from github3 import login
 from prettytable import PrettyTable
 import yaml
 
 
-def get_settings(yaml_path=os.getenv('GITHUB_SETTINGS_FILE', 'settings.yaml')):
+def get_settings(yaml_path=os.getenv('STATKUBE_SETTINGS_FILE',
+                                     'settings.yaml')):
     with open(yaml_path) as fp:
         settings = yaml.load(fp)
 
@@ -27,7 +29,7 @@ class GithubSession(object):
 
     def __str__(self):
         return "{}: {}".format(self.__class__.__name__,
-                               self.settings['GITHUB_USERNAME'])
+                               self.settings['STATKUBE_USERNAME'])
 
     __repr__ = __str__
 
@@ -55,14 +57,18 @@ class GithubSession(object):
     def login(self, method='basic'):
         if method == 'basic':
             return login(
-                self.settings['GITHUB_USERNAME'],
-                # password=self.settings['GITHUB_PASSWORD'])
+                self.settings['STATKUBE_USERNAME'],
+                # TODO: uncomment.
+                # password=self.settings['STATKUBE_PASSWORD'])
                 password=getpass())
 
     def _build_issue_query(self, type_='pr'):
-        query = 'type:{} repo:{} '.format(type_, self.settings['GITHUB_REPO'])
+        query = 'type:{} repo:{} '.format(type_,
+                                          self.settings['STATKUBE_REPO'])
         query += ' '.join(
-            'author:{}'.format(user) for user in self.settings['GITHUB_USERS'])
+            'author:{}'.format(user)
+            for user in self.settings['STATKUBE_USERS'])
+
         return query
 
     def get_general_info(self):
@@ -98,12 +104,13 @@ class GithubSession(object):
     def _pretty(self, data, **kwargs):
         if not data:
             raise ValueError("data argument is empty!")
-        headers = data[0].keys()
-        ptable = PrettyTable(headers, **kwargs)
-        with_sorted_headers = operator.itemgetter(*headers)
 
-        for pr in data:
-            ptable.add_row(with_sorted_headers(pr))
+        header = data[0].keys()
+        ptable = PrettyTable(header, **kwargs)
+        with_sorted_header = operator.itemgetter(*header)
+
+        for item in data:
+            ptable.add_row(with_sorted_header(item))
 
         return ptable
 
@@ -118,6 +125,26 @@ class GithubSession(object):
         pprs = self._pretty(data, **kwargs)
         print pprs
         return pprs
+
+    def _csv(self, data):
+        if not data:
+            raise ValueError("data argument is empty!")
+
+        header = data[0].keys()
+
+        path = self.settings['STATKUBE_CSV_PATH']
+        with open(path, 'wb') as fp:
+            writer = csv.DictWriter(fp, fieldnames=header)
+            writer.writeheader()
+            writer.writerows(data)
+
+        print "Data has been saved to {}".format(os.path.abspath(path))
+
+    def csv_pr(self):
+        return self._csv(self.get_pull_requests_data())
+
+    def csv_general(self):
+        return self._csv(self.get_general_info())
 
 
 gh = GithubSession()

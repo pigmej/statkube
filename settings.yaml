@@ -1,7 +1,8 @@
-GITHUB_USERNAME: gitfred
-GITHUB_PASSWORD: ''
-GITHUB_REPO: kubernetes/kubernetes
-GITHUB_USERS:
+STATKUBE_USERNAME: gitfred
+STATKUBE_PASSWORD: ''
+STATKUBE_REPO: kubernetes/kubernetes
+STATKUBE_CSV_PATH: results.csv
+STATKUBE_USERS:
   # - andreykurilin
   # - asalkeld
   # - dims
