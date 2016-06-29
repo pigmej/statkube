@@ -2,15 +2,15 @@ STATKUBE_USERNAME: gitfred
 STATKUBE_PASSWORD: 'SuP3rS3cr3!'
 STATKUBE_REPO: kubernetes/kubernetes
 STATKUBE_USERS:
-  # - andreykurilin
-  # - asalkeld
-  # - dims
-  # - dshulyak
-  # - Frostman
+  - andreykurilin
+  - asalkeld
+  - dims
+  - dshulyak
+  - Frostman
   - gitfred
   - loles
   - nebril
   - nhlfr
-  # - pigmej
-  # - tnachen
-  # - vefimova
+  - pigmej
+  - tnachen
+  - vefimova

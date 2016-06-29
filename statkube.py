@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from collections import OrderedDict
 from getpass import getpass
 from itertools import groupby
 import csv
@@ -7,9 +8,11 @@ import os
 import tempfile
 
 from argparse import ArgumentParser
-from github3 import login
+from github3 import authorize, login, GitHubError
 from prettytable import PrettyTable
 import yaml
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_parsed_args():
@@ -30,6 +33,9 @@ def get_parsed_args():
                         help="Github password use to login")
     parser.add_argument("-a", "--ask-for-password", action='store_true',
                         help="Force ask for password")
+    parser.add_argument("--users", nargs='+',
+                        help="GitHub usernames for lookup for example:\n"
+                        "./statkube.py -a --users gitfred pigmej nhlfr")
 
     args = parser.parse_args()
 
@@ -37,15 +43,15 @@ def get_parsed_args():
 
 
 class GithubWrapper(object):
-    DATA_MAPPING = {
-        'id': operator.attrgetter('number'),
-        'username': operator.attrgetter('user.login'),
-        'title': operator.attrgetter('title'),
-        'state': operator.attrgetter('state'),
-        'comments': operator.attrgetter('comments'),
-        'url': operator.attrgetter('html_url'),
-        'labels': lambda pr: ', '.join(l.name for l in pr.labels),
-    }
+    DATA_MAPPING = OrderedDict((
+        ('username', operator.attrgetter('user.login')),
+        ('id', operator.attrgetter('number')),
+        ('title', operator.attrgetter('title')),
+        ('state', operator.attrgetter('state')),
+        ('comments', operator.attrgetter('comments')),
+        ('url', operator.attrgetter('html_url')),
+        ('labels', lambda pr: ', '.join(l.name for l in pr.labels)),
+    ))
     DEFAULT_SORTBY = 'username'
 
     def __init__(self, args):
@@ -59,6 +65,8 @@ class GithubWrapper(object):
             self.settings['STATKUBE_PASSWORD'] = getpass(
                 "GitHub Password for {}: ".format(
                     self.settings['STATKUBE_USERNAME']))
+        if self.args.users:
+            self.settings['STATKUBE_USERS'] = self.args.users
 
     def __str__(self):
         return "{}: {}".format(self.__class__.__name__,
@@ -71,10 +79,7 @@ class GithubWrapper(object):
         if yaml_path is None:
             yaml_path = os.getenv(
                 'STATKUBE_SETTINGS_FILE',
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    'settings.yaml')
-            )
+                os.path.join(BASE_DIR, 'settings.yaml'))
 
         with open(yaml_path) as fp:
             settings = yaml.load(fp)
@@ -94,6 +99,42 @@ class GithubWrapper(object):
             self._session = self.login()
             return self._session
 
+    def login(self):
+        # FIXME: token is not working, still using basic auth
+        token_path = os.path.join(BASE_DIR, '.ghtoken')
+
+        if not os.path.exists(token_path):
+            auth = authorize(
+                self.settings['STATKUBE_USERNAME'],
+                self.settings['STATKUBE_PASSWORD'],
+                ['user'],
+                'StatKubsdfde')
+
+            gh_token = auth.token
+            gh_id = auth.id
+
+            with open(token_path, 'w') as fp:
+                fp.write(gh_token + '\n')
+                fp.write(str(auth.id))
+
+        else:
+            with open(token_path) as fp:
+                gh_token = fp.readline().strip()
+                gh_id = fp.readline().strip()
+
+        gh = login(token=gh_token)
+
+        try:
+            auth = gh.authorization(gh_id)
+        except GitHubError as err:
+            print "ERROR:", err.msg
+            auth = login(
+                self.settings['STATKUBE_USERNAME'],
+                self.settings['STATKUBE_PASSWORD'])
+            auth.user()
+
+        return auth
+
     @property
     def pull_requests(self):
         try:
@@ -106,15 +147,6 @@ class GithubWrapper(object):
         query = self._build_issue_query()
         search_iter = self.session.search_issues(query)
         return [i.issue for i in search_iter]
-
-    def login(self, method='basic'):
-        if method == 'basic':
-            gh = login(
-                self.settings['STATKUBE_USERNAME'],
-                password=self.settings['STATKUBE_PASSWORD'])
-            # to raise possible http errors
-            gh.user()
-            return gh
 
     def _build_issue_query(self, type_='pr'):
         query = 'type:{} repo:{} '.format(type_,
@@ -204,10 +236,8 @@ class GithubWrapper(object):
         if self.args.csv_path:
             self.csv(self.args.csv_path, self.args.type)
 
-        if self.args.no_pretty:
-            return
-
-        print self.pretty(self.args.type, sortby=self.args.sortby)
+        if not self.args.no_pretty:
+            print self.pretty(self.args.type, sortby=self.args.sortby)
 
 
 if __name__ == '__main__':

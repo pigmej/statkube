@@ -3,6 +3,9 @@ Usage
 
 Place the settings in `settings.yaml` on in some other place and set
 env var `STATKUBE_SETTINGS_FILE`.
+You can also set and environment variable for every setting in settings.yaml:
+
+`STATKUBE_USERNAME=gitfred python statkube.py`
 
 ```
 usage: statkube.py [-h] [-n] [-c CSV_PATH]
@@ -25,4 +28,5 @@ optional arguments:
   -a, --ask-for-password
                         Force ask for password
 ```
+
 
