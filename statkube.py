@@ -3,6 +3,7 @@ from collections import OrderedDict
 from getpass import getpass
 from itertools import groupby
 import csv
+import datetime
 import operator
 import os
 import tempfile
@@ -17,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_parsed_args():
     parser = ArgumentParser(
-        description="Fetch pull requests stats from GitHub."
+        description="Fetch pull requests stats from GitHub. "
                     "Place your settings in settings.yaml or setup custom "
                     "path by settings env: STATKUBE_SETTINGS_FILE.")
     parser.add_argument("-n", "--no-pretty", action="store_true")
@@ -34,8 +35,16 @@ def get_parsed_args():
     parser.add_argument("-a", "--ask-for-password", action='store_true',
                         help="Force ask for password")
     parser.add_argument("--users", nargs='+',
-                        help="GitHub usernames for lookup for example:\n"
+                        help="GitHub usernames for lookup for example: "
                         "./statkube.py -a --users gitfred pigmej nhlfr")
+
+    # FIXME: should be mutually exclusive with 'last'
+    parser.add_argument("--from-date", type=str,
+                        help="Created from date, format: YYYY-MM-DD")
+    parser.add_argument("--to-date", type=str,
+                        help="Created to date, format: YYYY-MM-DD")
+    parser.add_argument("--last", type=str, choices=[
+        'day', 'week', 'month'])
 
     args = parser.parse_args()
 
@@ -108,7 +117,7 @@ class GithubWrapper(object):
                 self.settings['STATKUBE_USERNAME'],
                 self.settings['STATKUBE_PASSWORD'],
                 ['user'],
-                'StatKubsdfde')
+                'StatKsdfdfsfdube')
 
             gh_token = auth.token
             gh_id = auth.id
@@ -154,6 +163,21 @@ class GithubWrapper(object):
         query += ' '.join(
             'author:{}'.format(user)
             for user in self.settings['STATKUBE_USERS'])
+
+        if self.args.from_date or self.args.to_date:
+            query += ' created:"{} .. {}"'.format(
+                self.args.from_date or '*',
+                self.args.to_date or '*')
+
+        if self.args.last:
+            last = self.args.last
+            if last in ('day', 'week'):
+                delta = datetime.timedelta(**{last + 's': 1})
+            elif last == 'month':
+                delta = datetime.timedelta(weeks=4)
+
+            dt = datetime.datetime.now() - delta
+            query += dt.strftime(' created:"%Y-%m-%d .. *"')
 
         return query
 
