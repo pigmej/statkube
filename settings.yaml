@@ -1,7 +1,6 @@
 STATKUBE_USERNAME: gitfred
-STATKUBE_PASSWORD: ''
+STATKUBE_PASSWORD: 'SuP3rS3cr3!'
 STATKUBE_REPO: kubernetes/kubernetes
-STATKUBE_CSV_PATH: results.csv
 STATKUBE_USERS:
   # - andreykurilin
   # - asalkeld
@@ -11,7 +10,7 @@ STATKUBE_USERS:
   - gitfred
   - loles
   - nebril
-  # - nhlfr
+  - nhlfr
   # - pigmej
   # - tnachen
   # - vefimova

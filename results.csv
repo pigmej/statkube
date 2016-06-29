@@ -1,8 +1,0 @@
-username,title,url,labels,comments,state,id
-gitfred,Fix attach command for InitContainers,https://github.com/kubernetes/kubernetes/pull/27541,"cla: yes, lgtm, release-note-none, size/S",15,closed,27541
-nebril,Replace map[string]string with labels.Set (TODO),https://github.com/kubernetes/kubernetes/pull/27275,"cla: yes, kind/api-change, release-note-label-needed, size/M",11,open,27275
-gitfred,Parallel waiting for pods in e2e,https://github.com/kubernetes/kubernetes/pull/27124,"cla: yes, lgtm, release-note-none, size/S",15,open,27124
-nebril,Make discovery summarizer call servers in parallel,https://github.com/kubernetes/kubernetes/pull/26705,"cla: yes, lgtm, release-note, size/M",12,open,26705
-gitfred,--no-header available now for custom-column,https://github.com/kubernetes/kubernetes/pull/26696,"cla: yes, release-note-label-needed, size/M",12,open,26696
-gitfred,DeepCopy Service instead of shallow copy #2049 ,https://github.com/kubernetes/kubernetes/pull/26529,"cla: yes, lgtm, ok-to-merge, release-note-none, size/XS",10,closed,26529
-nebril,Update evanphx/json-patch to newest version,https://github.com/kubernetes/kubernetes/pull/25866,"cla: yes, kind/bug, lgtm, needs-rebase, ok-to-merge, release-note-none, size/XS",14,closed,25866
