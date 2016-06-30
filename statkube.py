@@ -113,11 +113,15 @@ class GithubWrapper(object):
         token_path = os.path.join(BASE_DIR, '.ghtoken')
 
         if not os.path.exists(token_path):
-            auth = authorize(
-                self.settings['STATKUBE_USERNAME'],
-                self.settings['STATKUBE_PASSWORD'],
-                ['user'],
-                'StatKsdfdfsfdube')
+            try:
+                auth = authorize(
+                    self.settings['STATKUBE_USERNAME'],
+                    self.settings['STATKUBE_PASSWORD'],
+                    ['user'],
+                    'StatKube')
+            except GitHubError as err:
+                print "ERROR (autorization, trying basic auth):", err.msg
+                return self.basic_login()
 
             gh_token = auth.token
             gh_id = auth.id
@@ -137,10 +141,13 @@ class GithubWrapper(object):
             auth = gh.authorization(gh_id)
         except GitHubError as err:
             print "ERROR:", err.msg
-            auth = login(
-                self.settings['STATKUBE_USERNAME'],
-                self.settings['STATKUBE_PASSWORD'])
-            auth.user()
+            return self.basic_login()
+
+    def basic_login(self):
+        auth = login(
+            self.settings['STATKUBE_USERNAME'],
+            self.settings['STATKUBE_PASSWORD'])
+        auth.user()
 
         return auth
 

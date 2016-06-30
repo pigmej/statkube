@@ -29,4 +29,19 @@ optional arguments:
                         Force ask for password
 ```
 
+Example run:
+
+```
+sylwester➜~/devment/statkube(master✗)» ./statkube.py -a -s username --last week
+GitHub Password for gitfred:
+ERROR (autorization, trying basic auth): Validation Failed
++----------+------+--------+
+| username | open | closed |
++----------+------+--------+
+| asalkeld |  1   |   2    |
+|  nhlfr   |  1   |   0    |
+| vefimova |  1   |   0    |
++----------+------+--------+
+```
+
 
