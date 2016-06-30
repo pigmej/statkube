@@ -1,6 +1,7 @@
 STATKUBE_USERNAME: gitfred
 STATKUBE_PASSWORD: 'SuP3rS3cr3!'
 STATKUBE_REPO: kubernetes/kubernetes
+STATKUBE_QUERY_EXTRA: ''
 STATKUBE_USERS:
   - andreykurilin
   - asalkeld
@@ -14,3 +15,10 @@ STATKUBE_USERS:
   - pigmej
   - tnachen
   - vefimova
+  - zefciu
+# Define groups as "STATKUBE_GROUP_<custom_name>"
+STATKUBE_GROUP_POZNAN:
+  - gitfred
+  - nebril
+  - nhlfr
+  - zefciu

@@ -6,6 +6,7 @@ import csv
 import datetime
 import operator
 import os
+import re
 import tempfile
 
 from argparse import ArgumentParser
@@ -43,8 +44,15 @@ def get_parsed_args():
                         help="Created from date, format: YYYY-MM-DD")
     parser.add_argument("--to-date", type=str,
                         help="Created to date, format: YYYY-MM-DD")
-    parser.add_argument("--last", type=str, choices=[
+    parser.add_argument("-l", "--last", type=str, choices=[
         'day', 'week', 'month'])
+    parser.add_argument("-g", "--group", type=str, help="The group of users "
+                        "must be defined first in 'settings.yaml' as "
+                        "'STATKUBE_GROUP_<custom_name>'. "
+                        "Then pass <custom_name> as an argument here.")
+    parser.add_argument("-q", "--query-extra", type=str, help="This will be "
+                        "added to GH query. As a reference please see GitHub "
+                        "search API. Env var: STATKUBE_QUERY_EXTRA")
 
     args = parser.parse_args()
 
@@ -62,20 +70,40 @@ class GithubWrapper(object):
         ('labels', lambda pr: ', '.join(l.name for l in pr.labels)),
     ))
     DEFAULT_SORTBY = 'username'
+    STATKUBE_GROUP_REGEXP = re.compile(r"STATKUBE_GROUP_(?P<name>\w+)")
 
     def __init__(self, args):
         self.settings = self.get_settings()
         self.args = args
+
         if self.args.username:
             self.settings['STATKUBE_USERNAME'] = self.args.username
+
         if self.args.password:
             self.settings['STATKUBE_PASSWORD'] = self.args.password
+
         if self.args.ask_for_password:
             self.settings['STATKUBE_PASSWORD'] = getpass(
                 "GitHub Password for {}: ".format(
                     self.settings['STATKUBE_USERNAME']))
+
         if self.args.users:
             self.settings['STATKUBE_USERS'] = self.args.users
+
+        if self.args.query_extra:
+            self.settings['STATKUBE_QUERY_EXTRA'] = self.args.query_extra
+
+        if self.args.group:
+            user_groups = {k: v for k, v in self.settings.items()
+                           if self.STATKUBE_GROUP_REGEXP.search(k)}
+
+            key = "STATKUBE_GROUP_{}".format(self.args.group)
+            if key not in user_groups:
+                raise ValueError(
+                    "So such group defined '{}'. Defined groups: {}".format(
+                        key, ', '.join(user_groups)))
+
+            self.settings['STATKUBE_USERS'] = user_groups[key]
 
     def __str__(self):
         return "{}: {}".format(self.__class__.__name__,
@@ -185,6 +213,9 @@ class GithubWrapper(object):
 
             dt = datetime.datetime.now() - delta
             query += dt.strftime(' created:"%Y-%m-%d .. *"')
+
+        if self.settings['STATKUBE_QUERY_EXTRA']:
+            query += ' {}'.format(self.settings['STATKUBE_QUERY_EXTRA'])
 
         return query
 

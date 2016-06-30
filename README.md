@@ -30,6 +30,7 @@ optional arguments:
 ```
 
 Example run for general (default) info:
+=======================================
 
 ```
 sylwester➜~/devment/statkube(master✗)» ./statkube.py -a -s username --last week
@@ -45,6 +46,7 @@ ERROR (autorization, trying basic auth): Validation Failed
 ```
 
 Example run for prs type info:
+==============================
 
 ```
 sylwester➜~/devment/statkube(master)» ./statkube.py -a -s username --last day -t prs
@@ -57,4 +59,17 @@ ERROR (autorization, trying basic auth): Validation Failed
 +----------+------------------------------------------------------+-----------------------------------------------------+---------------------------------------------+----------+-------+-------+
 ```
 
+Example use of custom query:
+===========================
 
+```
+sylwester➜~/devment/statkube(master✗)» ./statkube.py -a -s username --last week -t prs -q "label:lgtm"
+GitHub Password for gitfred:
+ERROR (autorization, trying basic auth): Validation Failed
++----------+--------------------------------------------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------+----------+--------+-------+
+| username |                         title                          |                         url                         |                                                  labels                                                 | comments | state  |   id  |
++----------+--------------------------------------------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------+----------+--------+-------+
+| asalkeld |       Fix startup type error in initializeCaches       | https://github.com/kubernetes/kubernetes/pull/28002 | area/storage, cherrypick-approved, cla: yes, lgtm, priority/P0, release-note-none, size/L, team/cluster |    35    | closed | 28002 |
+| asalkeld | Ignore cmd/libs/go2idl/generator when running coverage | https://github.com/kubernetes/kubernetes/pull/28166 |                                cla: yes, lgtm, release-note-none, size/XS                               |    8     | closed | 28166 |
++----------+--------------------------------------------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------+----------+--------+-------+
+```
