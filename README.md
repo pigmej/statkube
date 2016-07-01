@@ -47,13 +47,63 @@ optional arguments:
                         see GitHub search API. Env var: STATKUBE_QUERY_EXTRA
 ```
 
+Authentication
+==============
+
+Run `./statkube -a` or with password provided in `settings.yaml` or in env var.
+
+```
+sylwester➜~/devment/statkube(master✗)» ./statkube.py -a
+GitHub Password for gitfred:
++---------------+------+--------+
+|    username   | open | closed |
++---------------+------+--------+
+|    Frostman   |  1   |   0    |
+| andreykurilin |  4   |   2    |
+|    asalkeld   |  5   |   6    |
+|      dims     |  8   |   9    |
+|    dshulyak   |  0   |   2    |
+|    gitfred    |  1   |   3    |
+|     nebril    |  2   |   1    |
+|     nhlfr     |  6   |   2    |
+|    tnachen    |  0   |   2    |
+|    vefimova   |  2   |   1    |
+|     zefciu    |  1   |   1    |
++---------------+------+--------+
+```
+
+Now GH access token is saved to `.ghtoken` file. You do not need use your
+password any more, just run `./statkube.py`
+
+```
+sylwester➜~/devment/statkube(master✗)» ./statkube.py
++---------------+------+--------+
+|    username   | open | closed |
++---------------+------+--------+
+|    Frostman   |  1   |   0    |
+| andreykurilin |  4   |   2    |
+|    asalkeld   |  5   |   6    |
+|      dims     |  8   |   9    |
+|    dshulyak   |  0   |   2    |
+|    gitfred    |  1   |   3    |
+|     nebril    |  2   |   1    |
+|     nhlfr     |  6   |   2    |
+|    tnachen    |  0   |   2    |
+|    vefimova   |  2   |   1    |
+|     zefciu    |  1   |   1    |
++---------------+------+--------+
+```
+
+In case of `422 Validation error`, remove your current keys from
+https://github.com/settings/tokens
+
+
 Example run for general (default) info:
 =======================================
 
 ```
 sylwester➜~/devment/statkube(master✗)» ./statkube.py -a -s username --last week
 GitHub Password for gitfred:
-ERROR (autorization, trying basic auth): Validation Failed
 +----------+------+--------+
 | username | open | closed |
 +----------+------+--------+
@@ -69,7 +119,6 @@ Example run for prs type info:
 ```
 sylwester➜~/devment/statkube(master)» ./statkube.py -a -s username --last day -t prs
 GitHub Password for gitfred:
-ERROR (autorization, trying basic auth): Validation Failed
 +----------+------------------------------------------------------+-----------------------------------------------------+---------------------------------------------+----------+-------+-------+
 | username |                        title                         |                         url                         |                    labels                   | comments | state |   id  |
 +----------+------------------------------------------------------+-----------------------------------------------------+---------------------------------------------+----------+-------+-------+
@@ -83,7 +132,6 @@ Example use of custom query:
 ```
 sylwester➜~/devment/statkube(master✗)» ./statkube.py -a -s username --last week -t prs -q "label:lgtm"
 GitHub Password for gitfred:
-ERROR (autorization, trying basic auth): Validation Failed
 +----------+--------------------------------------------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------+----------+--------+-------+
 | username |                         title                          |                         url                         |                                                  labels                                                 | comments | state  |   id  |
 +----------+--------------------------------------------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------+----------+--------+-------+
@@ -109,7 +157,6 @@ STATKUBE_GROUP_POZNAN:
 
 sylwester➜~/devment/statkube(master)» ./statkube.py -a -s username --last week -t prs -g POZNAN                                                                                           [15:02:12]
 GitHub Password for gitfred:
-ERROR (autorization, trying basic auth): Validation Failed
 +----------+------------------------------------------------------+-----------------------------------------------------+---------------------------------------------+----------+-------+-------+
 | username |                        title                         |                         url                         |                    labels                   | comments | state |   id  |
 +----------+------------------------------------------------------+-----------------------------------------------------+---------------------------------------------+----------+-------+-------+

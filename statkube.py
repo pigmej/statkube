@@ -35,6 +35,7 @@ def get_parsed_args():
                         help="Github password use to login")
     parser.add_argument("-a", "--ask-for-password", action='store_true',
                         help="Force ask for password")
+    parser.add_argument("--token", type=str, help="Access token to Github.")
     parser.add_argument("--users", nargs='+',
                         help="GitHub usernames for lookup for example: "
                         "./statkube.py -a --users gitfred pigmej nhlfr")
@@ -81,6 +82,9 @@ class GithubWrapper(object):
 
         if self.args.password:
             self.settings['STATKUBE_PASSWORD'] = self.args.password
+
+        if self.args.token:
+            self.settings['STATKUBE_ACCESS_TOKEN'] = self.args.token
 
         if self.args.ask_for_password:
             self.settings['STATKUBE_PASSWORD'] = getpass(
@@ -140,36 +144,33 @@ class GithubWrapper(object):
         # FIXME: token is not working, still using basic auth
         token_path = os.path.join(BASE_DIR, '.ghtoken')
 
-        if not os.path.exists(token_path):
-            try:
-                auth = authorize(
-                    self.settings['STATKUBE_USERNAME'],
-                    self.settings['STATKUBE_PASSWORD'],
-                    ['user'],
-                    'StatKube')
-            except GitHubError as err:
-                print "ERROR (autorization, trying basic auth):", err.msg
-                return self.basic_login()
-
-            gh_token = auth.token
-            gh_id = auth.id
-
-            with open(token_path, 'w') as fp:
-                fp.write(gh_token + '\n')
-                fp.write(str(auth.id))
+        if self.settings['STATKUBE_ACCESS_TOKEN']:
+            gh_token = self.settings['STATKUBE_ACCESS_TOKEN']
 
         else:
-            with open(token_path) as fp:
-                gh_token = fp.readline().strip()
-                gh_id = fp.readline().strip()
+            if not os.path.exists(token_path):
+                try:
+                    auth = authorize(
+                        self.settings['STATKUBE_USERNAME'],
+                        self.settings['STATKUBE_PASSWORD'],
+                        [], 'Statkube - fetch GH stats')
 
-        gh = login(token=gh_token)
+                except GitHubError as err:
+                    print ("ERROR authorization. Copy existing key from "
+                           "https://github.com/settings/tokens or delete it."
+                           "\n{}".format(err.msg))
+                    return self.basic_login()
 
-        try:
-            auth = gh.authorization(gh_id)
-        except GitHubError as err:
-            print "ERROR:", err.msg
-            return self.basic_login()
+                gh_token = auth.token
+
+                with open(token_path, 'w') as fp:
+                    fp.write(gh_token + '\n')
+
+            else:
+                with open(token_path) as fp:
+                    gh_token = fp.readline().strip()
+
+        return login(token=gh_token)
 
     def basic_login(self):
         auth = login(
