@@ -8,13 +8,13 @@ You can also set and environment variable for every setting in settings.yaml:
 `STATKUBE_USERNAME=gitfred python statkube.py`
 
 ```
-sylwester➜~/devment/statkube(master✗)» ./statkube.py --help
-usage: statkube.py [-h] [-n] [-c CSV_PATH]
-                   [-s {username,id,title,state,comments,url,labels}]
-                   [-t {general,prs}] [-u USERNAME] [-p PASSWORD] [-a]
-                   [--users USERS [USERS ...]] [--from-date FROM_DATE]
-                   [--to-date TO_DATE] [-l {day,week,month}] [-g GROUP]
-                   [-q QUERY_EXTRA]
+usage: statkube [-h] [-n] [-c CSV_PATH]
+                [-s {username,id,title,state,comments,url,labels}]
+                [-t {general,prs}] [-u USERNAME] [-p PASSWORD] [-a]
+                [--token TOKEN] [--users USERS [USERS ...]]
+                [--from-date FROM_DATE] [--to-date TO_DATE]
+                [-l {day,week,month}] [-g GROUP] [-q QUERY_EXTRA]
+                [--show-default-settings]
 
 Fetch pull requests stats from GitHub. Place your settings in settings.yaml or
 setup custom path by settings env: STATKUBE_SETTINGS_FILE.
@@ -31,12 +31,13 @@ optional arguments:
                         Github password use to login
   -a, --ask-for-password
                         Force ask for password
+  --token TOKEN         Access token to Github.
   --users USERS [USERS ...]
                         GitHub usernames for lookup for example: ./statkube.py
                         -a --users gitfred pigmej nhlfr
   --from-date FROM_DATE
-                        Created from date, format: YYYY-MM-DD
-  --to-date TO_DATE     Created to date, format: YYYY-MM-DD
+                        Created FROM date, format: YYYY-MM-DD
+  --to-date TO_DATE     Created TO date, format: YYYY-MM-DD
   -l {day,week,month}, --last {day,week,month}
   -g GROUP, --group GROUP
                         The group of users must be defined first in
@@ -45,6 +46,10 @@ optional arguments:
   -q QUERY_EXTRA, --query-extra QUERY_EXTRA
                         This will be added to GH query. As a reference please
                         see GitHub search API. Env var: STATKUBE_QUERY_EXTRA
+  --show-default-settings
+                        Shows the localization of default settings file which
+                        can be copied and changed. Use then
+                        STATKUBE_SETTINGS_FILE env var.
 ```
 
 Authentication

@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 from collections import OrderedDict
 from getpass import getpass
 from itertools import groupby
@@ -15,9 +14,10 @@ from prettytable import PrettyTable
 import yaml
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_SETTING_FILE = os.path.join(BASE_DIR, 'settings.yaml')
 
 
-def get_parsed_args():
+def get_parsed_args(args=None):
     parser = ArgumentParser(
         description="Fetch pull requests stats from GitHub. "
                     "Place your settings in settings.yaml or setup custom "
@@ -42,9 +42,9 @@ def get_parsed_args():
 
     # FIXME: should be mutually exclusive with 'last'
     parser.add_argument("--from-date", type=str,
-                        help="Created from date, format: YYYY-MM-DD")
+                        help="Created FROM date, format: YYYY-MM-DD")
     parser.add_argument("--to-date", type=str,
-                        help="Created to date, format: YYYY-MM-DD")
+                        help="Created TO date, format: YYYY-MM-DD")
     parser.add_argument("-l", "--last", type=str, choices=[
         'day', 'week', 'month'])
     parser.add_argument("-g", "--group", type=str, help="The group of users "
@@ -54,10 +54,14 @@ def get_parsed_args():
     parser.add_argument("-q", "--query-extra", type=str, help="This will be "
                         "added to GH query. As a reference please see GitHub "
                         "search API. Env var: STATKUBE_QUERY_EXTRA")
+    parser.add_argument("--show-default-settings", action='store_true',
+                        help="Shows the localization of default settings file "
+                        "which can be copied and changed. Use then "
+                        "STATKUBE_SETTINGS_FILE env var.")
 
-    args = parser.parse_args()
+    parsed = parser.parse_args(args=args)
 
-    return args
+    return parsed
 
 
 class GithubWrapper(object):
@@ -74,8 +78,8 @@ class GithubWrapper(object):
     STATKUBE_GROUP_REGEXP = re.compile(r"STATKUBE_GROUP_(?P<name>\w+)")
 
     def __init__(self, args):
-        self.settings = self.get_settings()
         self.args = args
+        self.settings = self.get_settings()
 
         if self.args.username:
             self.settings['STATKUBE_USERNAME'] = self.args.username
@@ -119,8 +123,7 @@ class GithubWrapper(object):
     def get_settings(yaml_path=None):
         if yaml_path is None:
             yaml_path = os.getenv(
-                'STATKUBE_SETTINGS_FILE',
-                os.path.join(BASE_DIR, 'settings.yaml'))
+                'STATKUBE_SETTINGS_FILE', DEFAULT_SETTING_FILE)
 
         with open(yaml_path) as fp:
             settings = yaml.load(fp)
@@ -301,8 +304,3 @@ class GithubWrapper(object):
 
         if not self.args.no_pretty:
             print self.pretty(self.args.type, sortby=self.args.sortby)
-
-
-if __name__ == '__main__':
-    args = get_parsed_args()
-    GithubWrapper(args).run()
