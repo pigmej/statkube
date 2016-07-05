@@ -1,3 +1,11 @@
+Installation
+============
+```
+$ git clone https://github.com/gitfred/statkube.git
+$ cd statkube
+$ python setup.py install
+```
+
 Usage
 =====
 
