@@ -15,6 +15,7 @@ import yaml
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SETTING_FILE = os.path.join(BASE_DIR, 'settings.yaml')
+GH_TOKEN_FILE = os.path.join(BASE_DIR, '.ghtoken')
 
 
 def get_parsed_args(args=None):
@@ -60,6 +61,8 @@ def get_parsed_args(args=None):
                         help="Shows the localization of default settings file "
                         "which can be copied and changed. Use then "
                         "STATKUBE_SETTINGS_FILE env var.")
+    parser.add_argument("--show-token-path", action='store_true',
+                        help="Shows the localization of GH token file.")
 
     parsed = parser.parse_args(args=args)
 

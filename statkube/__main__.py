@@ -4,8 +4,8 @@ from statkube.wrapper import (
     get_parsed_args,
     GithubWrapper,
     DEFAULT_SETTING_FILE,
+    GH_TOKEN_FILE,
 )
-
 
 def main(args=None):
     if args is None:
@@ -17,6 +17,10 @@ def main(args=None):
         print ("Copy file below, change it and set env var "
                "STATKUBE_SETTINGS_FILE.")
         print DEFAULT_SETTING_FILE
+        sys.exit(0)
+
+    if parsed.show_token_path:
+        print GH_TOKEN_FILE
         sys.exit(0)
 
     GithubWrapper(parsed).run()
