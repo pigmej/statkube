@@ -51,8 +51,8 @@ def get_parsed_args(args=None):
                         "must be defined first in 'settings.yaml' as "
                         "'STATKUBE_GROUP_<custom_name>'. "
                         "Then pass <custom_name> as an argument here.")
-    parser.add_argument("-i", "--iteration", type=str, help="Iteration "
-                        "previously definied in settings.yaml as a date range")
+    parser.add_argument("-r", "--date-range", type=str, help="Date range "
+                        "previously defined in settings.yaml")
     parser.add_argument("-q", "--query-extra", type=str, help="This will be "
                         "added to GH query. As a reference please see GitHub "
                         "search API. Env var: STATKUBE_QUERY_EXTRA")
@@ -115,8 +115,10 @@ class GithubWrapper(object):
 
             self.settings['STATKUBE_USERS'] = user_groups[key]
 
-        if self.args.iteration:
-            begin, end = self.settings['STATKUBE_ITERATION_RANGES'][self.args.iteration].split('..')
+        if self.args.date_range:
+            dr = self.args.date_range
+            begin, end = \
+                self.settings['STATKUBE_ITERATION_RANGES'][dr].split('..')
             self.args.from_date = begin.strip()
             self.args.to_date = end.strip()
 
@@ -199,15 +201,14 @@ class GithubWrapper(object):
             self._pull_requests = self._fetch_pull_requests()
             return self._pull_requests
 
-    def _fetch_pull_requests(self, type_='open'):
-        query = self.build_issue_query(type_=type_)
-        print "Query type:", type_
-        print "GH_QUERY:", query
+    def _fetch_pull_requests(self, q_kwargs=None):
+        query = self.build_issue_query(q_kwargs=q_kwargs)
         search_iter = self.session.search_issues(query)
         return [i.issue for i in search_iter]
 
-    def build_issue_query(self, type_='open'):
+    def build_issue_query(self, q_kwargs=None):
         query = self._other_details_query()
+        type_ = q_kwargs.pop('__type__', 'open')
 
         if self.args.last:
             last = self.args.last
@@ -226,6 +227,13 @@ class GithubWrapper(object):
                 query += self._merged_in_date_range()
             elif type_ == 'closed':
                 query += self._closed_in_date_range()
+
+        if q_kwargs and isinstance(q_kwargs, dict):
+            tmp_kwargs = ''
+            for key, val in q_kwargs.items():
+                tmp_kwargs += ' {}:{} '.format(key, val)
+
+            query += tmp_kwargs
 
         return query
 
@@ -258,31 +266,34 @@ class GithubWrapper(object):
 
     def get_general_info(self):
 
+        is_date_range = \
+            self.args.from_date or self.args.to_date or self.args.last
+
         def key_username(x):
             return x.user.login
 
-        # ret = []
-        # for username, prs in groupby(
-        #         sorted(self.pull_requests, key=key_username),
-        #         key=key_username):
-
-        #     prs = list(prs)
-        #     ret.append({
-        #         'username': username,
-        #         'open': len(filter(lambda x: x.state == 'open', prs)),
-        #         'closed': len(filter(lambda x: x.state == 'closed', prs)),
-        #     })
-
         stats = defaultdict(dict)
         for type_ in ('open', 'merged', 'closed'):
+
+            if is_date_range:
+                q_kwargs = {'__type__': type_}
+            else:
+                q_kwargs = {'is': type_}
+
             for username, prs in groupby(
-                    sorted(self._fetch_pull_requests(type_=type_), key=key_username),
+                    sorted(self._fetch_pull_requests(q_kwargs=q_kwargs),
+                           key=key_username),
                     key=key_username):
 
                 prs = list(prs)
                 stats[username][type_] = len(prs)
 
-        user_stats = {k:'{} / {} / {}'.format(v.get('open', 0), v.get('merged', 0), v.get('closed', 0)) for k, v in stats.items()}
+        user_stats = {
+            k: '{} / {} / {}'.format(v.get('open', 0),
+                                     v.get('merged', 0),
+                                     v.get('closed', 0))
+            for k, v in stats.items()
+        }
 
         general = {
             'open': sum(stats[user].get('open', 0) for user in stats),
@@ -290,7 +301,11 @@ class GithubWrapper(object):
             'closed': sum(stats[user].get('closed', 0) for user in stats),
         }
 
-        return [general], [{'username': user, 'stats (opened, merged, closed)':user_stats[user]} for user in user_stats]
+        return [general], [
+            {
+                'username': user,
+                'stats (opened, merged, closed)': user_stats[user]
+            } for user in user_stats]
 
     def get_pull_requests_data(self):
         return [
@@ -315,9 +330,13 @@ class GithubWrapper(object):
         if type_ == 'general':
             general, per_user = self.get_general_info()
             ckwargs = kwargs.copy()
-            ckwargs.pop('sortby')
-            print self._pretty_print(general, header=('open', 'merged', 'closed'), **ckwargs)
-            print self._pretty_print(per_user, **kwargs)
+            sortby = ckwargs.pop('sortby', None)
+            print self._pretty_print(
+                general, header=('open', 'merged', 'closed'), **ckwargs)
+            print self._pretty_print(
+                per_user,
+                header=('username', 'stats (opened, merged, closed)'),
+                sortby=sortby, **ckwargs)
         elif type_ == 'prs':
             print self._pretty_print(self.get_pull_requests_data(), **kwargs)
 
