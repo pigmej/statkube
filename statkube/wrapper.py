@@ -368,9 +368,16 @@ class GithubWrapper(object):
             path = tempfile.mktemp(suffix='.csv')
 
         if type_ == 'general':
-            return self._save_to_csv(path, self.get_general_info())
+            general, per_user = self.get_general_info()
+            abs_path, filename = os.path.split(path)
+            per_user_path = os.path.join(
+                abs_path,
+                'per_user-{}'.format(filename)
+            )
+            self._save_to_csv(path, general)
+            self._save_to_csv(per_user_path, per_user)
         elif type_ == 'prs':
-            return self._save_to_csv(path, self.get_pull_requests_data())
+            self._save_to_csv(path, self.get_pull_requests_data())
 
     def run(self):
         if self.args.csv_path:
