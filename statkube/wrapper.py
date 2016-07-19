@@ -82,9 +82,9 @@ class GithubWrapper(object):
     DEFAULT_SORTBY = 'username'
     STATKUBE_GROUP_REGEXP = re.compile(r"STATKUBE_GROUP_(?P<name>\w+)")
 
-    def __init__(self, args):
+    def __init__(self, args, settings=None):
         self.args = args
-        self.settings = self.get_settings()
+        self.settings = settings or self.get_settings()
 
         if self.args.username:
             self.settings['STATKUBE_USERNAME'] = self.args.username
@@ -124,7 +124,6 @@ class GithubWrapper(object):
                 self.settings['STATKUBE_ITERATION_RANGES'][dr].split('..')
             self.args.from_date = begin.strip()
             self.args.to_date = end.strip()
-
 
     def __str__(self):
         return "{}: {}".format(self.__class__.__name__,
