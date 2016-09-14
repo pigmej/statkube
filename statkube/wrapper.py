@@ -50,6 +50,7 @@ def get_parsed_args(args=None):
         'day', 'week', 'month'])
     parser.add_argument("-g", "--group", type=str, help="The group of users "
                         "must be defined first in 'settings.yaml' as "
+                        "must be defined first in 'settings.yaml' as "
                         "'STATKUBE_GROUP_<custom_name>'. "
                         "Then pass <custom_name> as an argument here.")
     parser.add_argument("-r", "--date-range", type=str, help="Date range "
@@ -82,9 +83,12 @@ class GithubWrapper(object):
     DEFAULT_SORTBY = 'username'
     STATKUBE_GROUP_REGEXP = re.compile(r"STATKUBE_GROUP_(?P<name>\w+)")
 
-    def __init__(self, args, settings=None):
+    def __init__(self, args, settings=None, repo=None):
+        self.general_info = None  # used for memo of general sum
+        self.stats = None  # used for memo of general sum
         self.args = args
         self.settings = settings or self.get_settings()
+        self.repo = repo
 
         if self.args.username:
             self.settings['STATKUBE_USERNAME'] = self.args.username
@@ -255,8 +259,13 @@ class GithubWrapper(object):
             self.args.to_date or '*')
 
     def _other_details_query(self, type_='pr'):
-        query = 'type:{} repo:{} '.format(type_,
-                                          self.settings['STATKUBE_REPO'])
+        if '/' in self.repo:
+            q = 'repo'
+        else:
+            q = 'org'
+        query = 'type:{} {}:{} '.format(type_,
+                                        q,
+                                        self.repo)
         query += ' '.join(
             'author:{}'.format(user)
             for user in self.settings['STATKUBE_USERS'])
@@ -303,6 +312,8 @@ class GithubWrapper(object):
             'closed': sum(stats[user].get('closed', 0) for user in stats),
         }
 
+        self.stats = stats
+        self.general_info = general
         return [general], [
             {
                 'username': user,
@@ -329,6 +340,7 @@ class GithubWrapper(object):
         return ptable
 
     def pretty(self, type_, **kwargs):
+        print "Stats for: %s" % self.repo
         if type_ == 'general':
             general, per_user = self.get_general_info()
             ckwargs = kwargs.copy()
