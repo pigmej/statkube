@@ -29,7 +29,7 @@ def main(args=None):
         repos = settings['STATKUBE_REPOS']
         Bulk(parsed, repos).run()
     else:
-        GithubWrapper(parsed, repo=settings['STATKUBE_REPOS'])
+        GithubWrapper(parsed, repo=settings['STATKUBE_REPO'])
 
 
 if __name__ == '__main__':
