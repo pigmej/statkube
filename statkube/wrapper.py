@@ -317,7 +317,7 @@ class GithubWrapper(object):
         return [general], [
             {
                 'username': user,
-                'stats (opened, merged, closed)': user_stats[user]
+                'stats (created, merged, closed)': user_stats[user]
             } for user in user_stats]
 
     def get_pull_requests_data(self):
@@ -349,7 +349,7 @@ class GithubWrapper(object):
                 general, header=('open', 'merged', 'closed'), **ckwargs)
             print self._pretty_print(
                 per_user,
-                header=('username', 'stats (opened, merged, closed)'),
+                header=('username', 'stats (created, merged, closed)'),
                 sortby=sortby, **ckwargs)
         elif type_ == 'prs':
             print self._pretty_print(self.get_pull_requests_data(), **kwargs)
