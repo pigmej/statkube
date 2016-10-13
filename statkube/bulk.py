@@ -37,7 +37,7 @@ class Bulk(object):
     def pretty(self, general, per_user):
         print "Bulk"
         print self._pretty_print(
-            general, header=('open', 'merged', 'closed'))
+            general, header=('created', 'merged', 'closed'))
         print self._pretty_print(
             per_user,
             header=('username', 'stats (created, merged, closed)'),
@@ -68,7 +68,7 @@ class Bulk(object):
         data = [
             {
                 'username': user,
-                'stats (created, merged, closed)': '{} / {} / {}'.format(d[user].get('open', 0),
+                'stats (created, merged, closed)': '{} / {} / {}'.format(d[user].get('created', 0),
                                                                         d[user].get('merged', 0),
                                                                         d[user].get('closed', 0))
             } for user in d]

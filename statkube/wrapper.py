@@ -56,7 +56,7 @@ def get_parsed_args(args=None):
     parser.add_argument("-r", "--date-range", type=str, help="Date range "
                         "previously defined in settings.yaml")
     parser.add_argument("-q", "--query-extra", type=str, help="This will be "
-                        "added to GH query. As a reference please see GitHub "
+                        "added to GH query. As a reference please s ee GitHub "
                         "search API. Env var: STATKUBE_QUERY_EXTRA")
     parser.add_argument("--show-default-settings", action='store_true',
                         help="Shows the localization of default settings file "
@@ -214,7 +214,7 @@ class GithubWrapper(object):
 
     def build_issue_query(self, q_kwargs=None):
         query = self._other_details_query()
-        type_ = q_kwargs.pop('__type__', 'open')
+        type_ = q_kwargs.pop('__type__', 'created')
 
         if self.args.last:
             last = self.args.last
@@ -227,7 +227,7 @@ class GithubWrapper(object):
             query += dt.strftime(' created:"%Y-%m-%d .. *"')
 
         elif self.args.from_date or self.args.to_date:
-            if type_ == 'open':
+            if type_ == 'created':
                 query += self._open_in_date_range_query()
             elif type_ == 'merged':
                 query += self._merged_in_date_range()
@@ -244,7 +244,7 @@ class GithubWrapper(object):
         return query
 
     def _open_in_date_range_query(self):
-        return ' created:"{0} .. {1}" -closed:"{0} .. {1}" '.format(
+        return ' created:"{0} .. {1}" '.format(
             self.args.from_date or '*',
             self.args.to_date or '*')
 
@@ -284,7 +284,7 @@ class GithubWrapper(object):
             return x.user.login
 
         stats = defaultdict(dict)
-        for type_ in ('open', 'merged', 'closed'):
+        for type_ in ('created', 'merged', 'closed'):
 
             if is_date_range:
                 q_kwargs = {'__type__': type_}
@@ -300,14 +300,14 @@ class GithubWrapper(object):
                 stats[username][type_] = len(prs)
 
         user_stats = {
-            k: '{} / {} / {}'.format(v.get('open', 0),
+            k: '{} / {} / {}'.format(v.get('created', 0),
                                      v.get('merged', 0),
                                      v.get('closed', 0))
             for k, v in stats.items()
         }
 
         general = {
-            'open': sum(stats[user].get('open', 0) for user in stats),
+            'created': sum(stats[user].get('created', 0) for user in stats),
             'merged': sum(stats[user].get('merged', 0) for user in stats),
             'closed': sum(stats[user].get('closed', 0) for user in stats),
         }
@@ -346,7 +346,7 @@ class GithubWrapper(object):
             ckwargs = kwargs.copy()
             sortby = ckwargs.pop('sortby', None)
             print self._pretty_print(
-                general, header=('open', 'merged', 'closed'), **ckwargs)
+                general, header=('created', 'merged', 'closed'), **ckwargs)
             print self._pretty_print(
                 per_user,
                 header=('username', 'stats (created, merged, closed)'),
